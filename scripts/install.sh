@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script de Instalação Inteligente - Termux AI Suite
+# Script de Instalação Inteligente - Termux AI Suite (V3)
 # Otimizado para Redmi 13C 4G
 
 # Pegar o diretório raiz do projeto
@@ -8,6 +8,19 @@ ROOT_DIR=$(cd "$(dirname "$0")/.." && pwd)
 cd "$ROOT_DIR"
 
 echo "🚀 Iniciando instalação no diretório: $ROOT_DIR"
+
+# VERIFICAÇÃO CRÍTICA: Impedir instalação em storage/shared (causa erros de Go/Rust)
+if [[ "$ROOT_DIR" == *"/storage/shared"* ]]; then
+    echo "❌ ERRO DETECTADO: Você está tentando instalar na memória compartilhada (/storage/shared)."
+    echo "As linguagens Go e Rust não permitem compilação nesta pasta devido a restrições do Android."
+    echo ""
+    echo "💡 SOLUÇÃO: Mova o projeto para a memória interna do Termux com os comandos:"
+    echo "   cd ~"
+    echo "   mv $ROOT_DIR ."
+    echo "   cd termux-ai-suite"
+    echo "   bash scripts/install.sh"
+    exit 1
+fi
 
 # 1. Atualizar e Instalar dependências do sistema
 echo "📦 Instalando pacotes do sistema..."
@@ -26,19 +39,22 @@ if [ -f "engines/api_client.go" ]; then
     if [ ! -f "go.mod" ]; then
         go mod init termux-ai-suite/engines
     fi
+    # Tentar compilar sem travar arquivos (para maior compatibilidade)
     go build -o api_client api_client.go
-    mv api_client "$ROOT_DIR/"
+    if [ -f "api_client" ]; then
+        mv api_client "$ROOT_DIR/"
+        echo "✅ Motor Go compilado."
+    else
+        echo "❌ Falha ao compilar Go."
+    fi
     cd "$ROOT_DIR"
-else
-    echo "⚠️ Aviso: engines/api_client.go não encontrado."
 fi
 
 # 4. Compilar Rust
 echo "🦀 Compilando processador Rust..."
 if [ -f "core/text_processor.rs" ]; then
     rustc core/text_processor.rs -o text_processor
-else
-    echo "⚠️ Aviso: core/text_processor.rs não encontrado."
+    echo "✅ Processador Rust compilado."
 fi
 
 # 5. Configurar Node.js
