@@ -8,6 +8,11 @@ def main():
     print("      TERMUX AI SUITE (UNIFICADA)   ")
     print("====================================")
     
+    # Garantir diretórios necessários
+    for folder in ["assets", "output"]:
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+    
     parser = argparse.ArgumentParser()
     parser.add_argument("--mode", choices=["chat", "video"], required=True)
     parser.add_argument("--engine", choices=["gemini", "groq"], default="gemini")
