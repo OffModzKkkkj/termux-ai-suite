@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+.env
+assets/test_audio.mp3
+assets/slide_*.png
+assets/clip_*.mp4
+assets/concat_list.txt
+output/test_result.mp4
+output/test_thumb.png
